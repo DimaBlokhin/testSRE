@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: your-app-deployment  # Имя развертываемого деплоймента
+spec:
+  replicas: 4  # Четыре реплики для обеспечения пиковой нагрузки
+  strategy:
+    type: RollingUpdate  # Стратегия постепенного обновления приложения
+  selector:
+    matchLabels:
+      app: your-app  # Выбор подов, относящихся к данному деплойменту
+  template:
+    metadata:
+      labels:
+        app: your-app  # Метка для подов
+    spec:
+      nodeSelector:
+        kubernetes.io/zone: zone1  # Выбор узлов в разных зонах для обеспечения отказоустойчивости
+      containers:
+        - name: your-app-container  # Имя контейнера
+          image: your-docker-image:latest  # Образ Docker-контейнера
+          resources:
+            requests:
+              memory: "128Mi"  # Ожидаемое потребление памяти
+              cpu: "1"  # Ожидаемое потребление CPU
+            limits:
+              memory: "128Mi"  # Максимальное потребление памяти
+              cpu: "1"  # Максимальное потребление CPU
+          readinessProbe:
+            httpGet:
+              path: /health  # Путь для проверки готовности пода
+              port: 8080  # Порт для проверки
+            initialDelaySeconds: 10  # Ожидание инициализации
+            periodSeconds: 5  # Интервал проверок
+            timeoutSeconds: 3  # Таймаут проверки
+            successThreshold: 1  # Количество успешных проверок для принятия пода как готового
+            failureThreshold: 3  # Количество неудачных проверок перед маркировкой пода как неготового
